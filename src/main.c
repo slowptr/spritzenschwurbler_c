@@ -1,36 +1,16 @@
 #include <Windows.h>
 #include <stdio.h>
 
-#include "utils/injector.h"
+#include "ss_window.h"
 
-int
-main (int argc, char **argv)
+int APIENTRY
+WinMain (HINSTANCE inst, HINSTANCE prev_inst, PSTR cmdline, int cmdshow)
 {
-  if (argc < 2)
+  if (!ss_window_init ())
     {
-      printf ("usage: .exe <process name> <dll name>");
+      fprintf (stderr, "Failed to create window.\n");
       return 1;
     }
 
-  ss_process_t process = ss_init (argv[1]);
-  while (!ss_attach (&process, PROCESS_ALL_ACCESS))
-    {
-      printf (".");
-      Sleep (1000);
-    }
-
-  printf ("\n");
-  printf ("[+] found process '%s' with id %lu\n", process.name, process.pid);
-
-  if (!ss_inject_dll (&process, argv[2]))
-    {
-      printf ("[-] => injection failed [%lu]\n", GetLastError ());
-      ss_finish (&process);
-      getchar ();
-      return 1;
-    }
-
-  printf ("[+] => injected dll successfully\n");
-  ss_finish (&process);
-  return 0;
+  return ss_window_msg_loop ();
 }
